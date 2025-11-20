@@ -9,7 +9,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        project: [demo1, demo2]
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -20,15 +23,17 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
+        cache-dependency-path: ${{ matrix.project }}/pom.xml
 
-    - name: Run tests
+    - name: Run tests for ${{ matrix.project }}
+      working-directory: ${{ matrix.project }}
       run: mvn clean test
 
-    - name: Upload test results
+    - name: Upload test results for ${{ matrix.project }}
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: test-results
-        path: target/surefire-reports
+        name: test-results-${{ matrix.project }}
+        path: ${{ matrix.project }}/target/surefire-reports
         retention-days: 30
 
